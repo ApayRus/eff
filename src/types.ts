@@ -1,5 +1,5 @@
-export type TimerMode = 'idle' | 'pomodoro' | 'potata'
-export type WorkMode = Extract<TimerMode, 'pomodoro' | 'potata'>
+export type TimerMode = 'idle' | 'pomodoro' | 'patata'
+export type WorkMode = Extract<TimerMode, 'pomodoro' | 'patata'>
 
 export type LogEntry = {
 	id: string
@@ -19,7 +19,7 @@ export type StoredSettings = {
 export const defaultSettings: StoredSettings = {
 	hourlyRate: 1000,
 	workdayMinutes: 480,
-	pomodoroMinutes: 40,
+	pomodoroMinutes: 40
 }
 
 export function formatTime(totalSeconds: number): string {

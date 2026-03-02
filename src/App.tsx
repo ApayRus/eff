@@ -5,7 +5,7 @@ import { defaultSettings, getDateKey } from './types'
 import type { LogEntry, StoredSettings, TimerMode, WorkMode } from './types'
 import SettingsBar from './components/SettingsBar'
 import PomodoroTimer from './components/PomodoroTimer'
-import PotataTimer from './components/PotataTimer'
+import PatataTimer from './components/PatataTimer'
 import MoneyRow from './components/MoneyRow'
 import DayProgress from './components/DayProgress'
 import ActivityLog from './components/ActivityLog'
@@ -23,7 +23,7 @@ export default function App() {
 	const [pomodoroTargetReached, setPomodoroTargetReached] = useState(false)
 
 	const pomodoroAudio = useRef<HTMLAudioElement | null>(null)
-	const potataAudio = useRef<HTMLAudioElement | null>(null)
+	const patataAudio = useRef<HTMLAudioElement | null>(null)
 	const stopAudio = useRef<HTMLAudioElement | null>(null)
 
 	// ── Init: load from localStorage & create audio ──
@@ -31,14 +31,22 @@ export default function App() {
 		try {
 			const raw = window.localStorage.getItem(LOG_KEY)
 			if (raw) setLogs(JSON.parse(raw) as LogEntry[])
-		} catch { /* ignore */ }
+		} catch {
+			/* ignore */
+		}
 		try {
 			const raw = window.localStorage.getItem(SETTINGS_KEY)
-			if (raw) setSettings(prev => ({ ...prev, ...(JSON.parse(raw) as StoredSettings) }))
-		} catch { /* ignore */ }
+			if (raw)
+				setSettings(prev => ({
+					...prev,
+					...(JSON.parse(raw) as StoredSettings)
+				}))
+		} catch {
+			/* ignore */
+		}
 		const base = import.meta.env.BASE_URL
 		pomodoroAudio.current = new Audio(`${base}sounds/pomodoro.mp3`)
-		potataAudio.current = new Audio(`${base}sounds/patata.mp3`)
+		patataAudio.current = new Audio(`${base}sounds/patata.mp3`)
 		stopAudio.current = new Audio(`${base}sounds/stop.mp3`)
 	}, [])
 
@@ -66,11 +74,16 @@ export default function App() {
 	}, [isRunning, mode, settings.pomodoroMinutes, pomodoroTargetReached])
 
 	// ── Derived values ──
-	const perMinuteRate = useMemo(() => settings.hourlyRate / 60, [settings.hourlyRate])
+	const perMinuteRate = useMemo(
+		() => settings.hourlyRate / 60,
+		[settings.hourlyRate]
+	)
 	const todayKey = getDateKey(new Date())
 
 	const totals = useMemo(() => {
-		let earned = 0, lost = 0, workedMinutesToday = 0
+		let earned = 0,
+			lost = 0,
+			workedMinutesToday = 0
 		for (const e of logs) {
 			if (e.mode === 'pomodoro') earned += e.amount
 			else lost += Math.abs(e.amount)
@@ -80,35 +93,47 @@ export default function App() {
 		if (isRunning && mode !== 'idle') {
 			const mins = elapsedSeconds / 60
 			const amt = mins * perMinuteRate
-			if (mode === 'pomodoro') { earned += amt; workedMinutesToday += mins }
-			else { lost += Math.abs(amt) }
+			if (mode === 'pomodoro') {
+				earned += amt
+				workedMinutesToday += mins
+			} else {
+				lost += Math.abs(amt)
+			}
 		}
 		return { earned, lost, workedMinutesToday }
 	}, [logs, todayKey, isRunning, elapsedSeconds, perMinuteRate, mode])
 
 	const dayProgress = Math.min(
 		100,
-		settings.workdayMinutes > 0 ? (totals.workedMinutesToday / settings.workdayMinutes) * 100 : 0,
+		settings.workdayMinutes > 0
+			? (totals.workedMinutesToday / settings.workdayMinutes) * 100
+			: 0
 	)
 
 	const pomodoroProgress = Math.min(
 		100,
-		mode === 'pomodoro' ? (elapsedSeconds / (settings.pomodoroMinutes * 60 || 1)) * 100 : 0,
+		mode === 'pomodoro'
+			? (elapsedSeconds / (settings.pomodoroMinutes * 60 || 1)) * 100
+			: 0
 	)
 
 	// ── Audio helpers ──
 	function stopAllSounds() {
-		;[pomodoroAudio.current, potataAudio.current].forEach(a => {
-			if (!a) return; a.pause(); a.currentTime = 0
+		;[pomodoroAudio.current, patataAudio.current].forEach(a => {
+			if (!a) return
+			a.pause()
+			a.currentTime = 0
 		})
 	}
 
 	function playModeSound(m: TimerMode) {
 		stopAllSounds()
 		if (m === 'pomodoro' && pomodoroAudio.current) {
-			pomodoroAudio.current.loop = true; void pomodoroAudio.current.play()
-		} else if (m === 'potata' && potataAudio.current) {
-			potataAudio.current.loop = true; void potataAudio.current.play()
+			pomodoroAudio.current.loop = true
+			void pomodoroAudio.current.play()
+		} else if (m === 'patata' && patataAudio.current) {
+			patataAudio.current.loop = true
+			void patataAudio.current.play()
 		}
 	}
 
@@ -123,7 +148,7 @@ export default function App() {
 			start: start.toISOString(),
 			end: end.toISOString(),
 			durationMinutes,
-			amount: sign * durationMinutes * perMinuteRate,
+			amount: sign * durationMinutes * perMinuteRate
 		}
 		setLogs(prev => {
 			const next = [...prev, entry]
@@ -134,25 +159,37 @@ export default function App() {
 
 	// ── Timer actions ──
 	function startPomodoro() {
-		setMode('pomodoro'); setIsRunning(true)
-		setElapsedSeconds(0); setCurrentStart(new Date())
-		setPomodoroTargetReached(false); playModeSound('pomodoro')
+		setMode('pomodoro')
+		setIsRunning(true)
+		setElapsedSeconds(0)
+		setCurrentStart(new Date())
+		setPomodoroTargetReached(false)
+		playModeSound('pomodoro')
 	}
 
-	function startPotata() {
-		setMode('potata'); setIsRunning(true)
-		setElapsedSeconds(0); setCurrentStart(new Date())
-		setPomodoroTargetReached(false); playModeSound('potata')
+	function startPatata() {
+		setMode('patata')
+		setIsRunning(true)
+		setElapsedSeconds(0)
+		setCurrentStart(new Date())
+		setPomodoroTargetReached(false)
+		playModeSound('patata')
 	}
 
-	function stopCurrentTimer(thenPotata: boolean) {
+	function stopCurrentTimer(thenPatata: boolean) {
 		if (!currentStart || mode === 'idle') {
-			setIsRunning(false); setMode('idle'); stopAllSounds(); return
+			setIsRunning(false)
+			setMode('idle')
+			stopAllSounds()
+			return
 		}
 		persistLog(mode as WorkMode, currentStart, new Date())
-		setIsRunning(false); setCurrentStart(null)
-		setElapsedSeconds(0); setPomodoroTargetReached(false); stopAllSounds()
-		if (thenPotata) startPotata()
+		setIsRunning(false)
+		setCurrentStart(null)
+		setElapsedSeconds(0)
+		setPomodoroTargetReached(false)
+		stopAllSounds()
+		if (thenPatata) startPatata()
 		else setMode('idle')
 	}
 
@@ -161,13 +198,17 @@ export default function App() {
 		const end = new Date()
 		if (stopAudio.current) void stopAudio.current.play()
 		persistLog('pomodoro', currentStart, end)
-		setCurrentStart(null); setPomodoroTargetReached(true)
-		startPotata()
+		setCurrentStart(null)
+		setPomodoroTargetReached(true)
+		startPatata()
 	}
 
 	function handlePomodoroButton() {
-		if (mode === 'pomodoro' && isRunning) { stopCurrentTimer(true); return }
-		if (mode === 'potata' && isRunning) stopCurrentTimer(false)
+		if (mode === 'pomodoro' && isRunning) {
+			stopCurrentTimer(true)
+			return
+		}
+		if (mode === 'patata' && isRunning) stopCurrentTimer(false)
 		startPomodoro()
 	}
 
@@ -177,7 +218,10 @@ export default function App() {
 			window.localStorage.setItem(LOG_KEY, JSON.stringify([]))
 			return []
 		})
-		setMode('idle'); setIsRunning(false); setCurrentStart(null); stopAllSounds()
+		setMode('idle')
+		setIsRunning(false)
+		setCurrentStart(null)
+		stopAllSounds()
 	}
 
 	// ── Render ──
@@ -185,7 +229,7 @@ export default function App() {
 		<div className='app'>
 			{/* ── Верхняя строка: заголовок + настройки ── */}
 			<header className='app-topbar'>
-				<h1 className='app-title'>Pomodoro / Potata</h1>
+				<h1 className='app-title'>Pomodoro / Patata</h1>
 				<SettingsBar
 					settings={settings}
 					onChange={patch => setSettings(prev => ({ ...prev, ...patch }))}
@@ -202,9 +246,9 @@ export default function App() {
 						progress={pomodoroProgress}
 						onStart={handlePomodoroButton}
 					/>
-					<PotataTimer
+					<PatataTimer
 						elapsedSeconds={elapsedSeconds}
-						isActive={mode === 'potata'}
+						isActive={mode === 'patata'}
 						isRunning={isRunning}
 					/>
 				</div>

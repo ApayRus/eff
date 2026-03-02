@@ -19,7 +19,7 @@ export default function ActivityLog({ logs, onClear }: Props) {
 			.sort(([a], [b]) => (a < b ? 1 : -1))
 			.map(([date, entries]) => ({
 				date,
-				entries: entries.sort((a, b) => (a.start < b.start ? -1 : 1)),
+				entries: entries.sort((a, b) => (a.start < b.start ? -1 : 1))
 			}))
 	}, [logs])
 
@@ -42,7 +42,7 @@ export default function ActivityLog({ logs, onClear }: Props) {
 								{new Date(date).toLocaleDateString('ru-RU', {
 									year: 'numeric',
 									month: 'long',
-									day: 'numeric',
+									day: 'numeric'
 								})}
 							</h3>
 							<ul>
@@ -54,22 +54,33 @@ export default function ActivityLog({ logs, onClear }: Props) {
 										<li key={entry.id} className={`log-item ${entry.mode}`}>
 											<div className='log-main'>
 												<span className='log-type'>
-													{entry.mode === 'pomodoro' ? 'Pomodoro' : 'Potata'}
+													{entry.mode === 'pomodoro' ? 'Pomodoro' : 'Patata'}
 												</span>
 												<span className='log-time'>
-													{start.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+													{start.toLocaleTimeString('ru-RU', {
+														hour: '2-digit',
+														minute: '2-digit'
+													})}
 													{' — '}
-													{end.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+													{end.toLocaleTimeString('ru-RU', {
+														hour: '2-digit',
+														minute: '2-digit'
+													})}
 												</span>
 											</div>
 											<div className='log-meta'>
-												<span className='log-duration'>{entry.durationMinutes.toFixed(1)} мин</span>
+												<span className='log-duration'>
+													{entry.durationMinutes.toFixed(1)} мин
+												</span>
 												<span
 													className={`log-amount ${
-														entry.mode === 'pomodoro' ? 'log-amount-positive' : 'log-amount-negative'
+														entry.mode === 'pomodoro'
+															? 'log-amount-positive'
+															: 'log-amount-negative'
 													}`}
 												>
-													{sign}{Math.abs(entry.amount).toFixed(2)} ₽
+													{sign}
+													{Math.abs(entry.amount).toFixed(2)} ₽
 												</span>
 											</div>
 										</li>
