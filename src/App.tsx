@@ -36,9 +36,10 @@ export default function App() {
 			const raw = window.localStorage.getItem(SETTINGS_KEY)
 			if (raw) setSettings(prev => ({ ...prev, ...(JSON.parse(raw) as StoredSettings) }))
 		} catch { /* ignore */ }
-		pomodoroAudio.current = new Audio('/sounds/pomodoro.mp3')
-		potataAudio.current = new Audio('/sounds/patata.mp3')
-		stopAudio.current = new Audio('/sounds/stop.mp3')
+		const base = import.meta.env.BASE_URL
+		pomodoroAudio.current = new Audio(`${base}sounds/pomodoro.mp3`)
+		potataAudio.current = new Audio(`${base}sounds/patata.mp3`)
+		stopAudio.current = new Audio(`${base}sounds/stop.mp3`)
 	}, [])
 
 	useEffect(() => {
