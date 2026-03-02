@@ -1,0 +1,451 @@
+.app {
+  max-width: 1120px;
+  margin: 32px auto;
+  padding: 24px 24px 40px;
+  border-radius: 24px;
+  backdrop-filter: blur(18px);
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.26), rgba(15, 15, 23, 0.92));
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+  color: #f6f6f9;
+}
+
+.app-header {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 32px;
+  letter-spacing: 0.04em;
+}
+
+.app-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: rgba(238, 238, 247, 0.78);
+}
+
+.app-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.25fr);
+  grid-template-rows: auto auto;
+  align-items: flex-start;
+}
+
+.panel {
+  background: rgba(18, 18, 28, 0.92);
+  border-radius: 18px;
+  padding: 18px 18px 20px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 255, 0.88);
+}
+
+.panel-settings {
+  grid-row: 1;
+}
+
+.panel-timers {
+  grid-row: 1 / span 2;
+}
+
+.panel-progress {
+  grid-row: 2;
+}
+
+.panel-log {
+  grid-column: 1 / -1;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.field span {
+  color: rgba(230, 230, 245, 0.86);
+}
+
+.field input {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 8px;
+  background: rgba(12, 12, 20, 0.9);
+  color: #f6f6f9;
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.field input:focus {
+  border-color: rgba(122, 186, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(122, 186, 255, 0.7);
+  background: rgba(22, 22, 32, 0.98);
+}
+
+.primary-button,
+.danger-button {
+  border-radius: 999px;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.14s ease,
+    background 0.14s ease,
+    opacity 0.14s ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  color: #111016;
+  box-shadow:
+    0 10px 22px rgba(248, 113, 22, 0.45),
+    0 0 0 1px rgba(248, 190, 120, 0.22);
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 30px rgba(248, 113, 22, 0.62),
+    0 0 0 1px rgba(248, 190, 120, 0.3);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 6px 12px rgba(248, 113, 22, 0.5),
+    0 0 0 1px rgba(248, 190, 120, 0.22);
+}
+
+.danger-button {
+  background: transparent;
+  color: rgba(255, 140, 140, 0.92);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 99, 132, 0.58);
+  padding-inline: 14px;
+}
+
+.danger-button:hover {
+  background: rgba(127, 29, 29, 0.65);
+}
+
+.timers-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.timer-card {
+  background:
+    radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  border: 1px solid rgba(252, 211, 77, 0.18);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  aspect-ratio: 1 / 1;
+}
+
+.timer-card-pomodoro {
+  background:
+    linear-gradient(135deg, rgba(248, 113, 22, 0.25), rgba(15, 23, 42, 0.98)),
+    url('/images/pomodoro.png') center / cover no-repeat;
+}
+
+.timer-card-potata {
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(15, 23, 42, 0.98)),
+    url('/images/patata.png') center / cover no-repeat;
+}
+
+.timer-card {
+  opacity: 0.55;
+  filter: grayscale(30%);
+  transition:
+    opacity 0.18s ease,
+    filter 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.timer-card.timer-card-active {
+  opacity: 1;
+  filter: none;
+}
+
+.timer-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.timer-progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  overflow: hidden;
+}
+
+.timer-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #facc15, #f97316);
+  box-shadow: 0 0 12px rgba(248, 113, 22, 0.8);
+  transition: width 0.2s ease-out;
+}
+
+.timer-progress-label {
+  font-size: 12px;
+  color: rgba(226, 232, 240, 0.9);
+  min-width: 52px;
+  text-align: right;
+}
+
+.timer-card-break {
+  border-color: rgba(96, 165, 250, 0.7);
+}
+
+.timer-card h3 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.timer-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timer-time {
+  font-size: 36px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.timer-mode-label {
+  font-size: 13px;
+  color: rgba(226, 232, 240, 0.86);
+  text-align: right;
+}
+
+.timer-card-active {
+  box-shadow:
+    0 0 0 1px rgba(252, 211, 77, 0.4),
+    0 0 40px rgba(248, 113, 22, 0.65);
+}
+
+.timer-card-active.timer-card-break {
+  box-shadow:
+    0 0 0 1px rgba(96, 165, 250, 0.5),
+    0 0 34px rgba(56, 189, 248, 0.8);
+}
+
+.money-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.money-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.money-earned {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(6, 95, 70, 0.96));
+  border: 1px solid rgba(74, 222, 128, 0.6);
+}
+
+.money-lost {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.12), rgba(127, 29, 29, 0.96));
+  border: 1px solid rgba(248, 113, 113, 0.7);
+}
+
+.money-card span {
+  color: rgba(229, 231, 235, 0.88);
+}
+
+.money-card strong {
+  font-size: 18px;
+}
+
+.panel-progress .progress-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: radial-gradient(circle at top, rgba(148, 163, 184, 0.3), rgba(15, 23, 42, 0.95));
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #facc15, #f97316);
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.8);
+  transition: width 0.25s ease-out;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(209, 213, 219, 0.92);
+}
+
+.panel-log .log-list {
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.log-day + .log-day {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.log-day h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: rgba(226, 232, 240, 0.96);
+}
+
+.log-day ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.log-item.pomodoro {
+  border-left: 3px solid rgba(74, 222, 128, 0.9);
+}
+
+.log-item.potata {
+  border-left: 3px solid rgba(248, 113, 113, 0.95);
+}
+
+.log-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.log-type {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.96);
+}
+
+.log-time {
+  color: rgba(209, 213, 219, 0.9);
+}
+
+.log-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.log-duration {
+  color: rgba(148, 163, 184, 0.98);
+}
+
+.log-amount {
+  font-weight: 700;
+}
+
+.log-amount-positive {
+  color: #4ade80;
+}
+
+.log-amount-negative {
+  color: #f97373;
+}
+
+.empty-log {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(148, 163, 184, 0.96);
+}
+
+@media (max-width: 900px) {
+  .app {
+    margin: 16px;
+    padding-inline: 16px;
+  }
+
+  .app-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel-timers {
+    grid-row: auto;
+  }
+
+  .panel-progress {
+    grid-row: auto;
+  }
+
+  .form-grid,
+  .timers-row,
+  .money-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
