@@ -1,5 +1,6 @@
-const CACHE_NAME = 'eff-cache-v1'
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest']
+const CACHE_NAME = 'eff-cache-v2'
+const BASE_PATH = new URL(self.registration.scope).pathname
+const APP_SHELL = [BASE_PATH, `${BASE_PATH}index.html`, `${BASE_PATH}manifest.webmanifest`]
 
 self.addEventListener('install', event => {
 	event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)))
@@ -10,7 +11,9 @@ self.addEventListener('activate', event => {
 		caches
 			.keys()
 			.then(keys =>
-				Promise.all(keys.map(key => (key !== CACHE_NAME ? caches.delete(key) : Promise.resolve())))
+				Promise.all(
+					keys.map(key => (key !== CACHE_NAME ? caches.delete(key) : Promise.resolve()))
+				)
 			)
 			.then(() => self.clients.claim())
 	)
@@ -33,7 +36,7 @@ self.addEventListener('fetch', event => {
 					caches.open(CACHE_NAME).then(cache => cache.put(request, copy))
 					return response
 				})
-				.catch(() => caches.match('/index.html'))
+				.catch(() => caches.match(`${BASE_PATH}index.html`))
 		})
 	)
 })
