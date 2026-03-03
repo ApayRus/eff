@@ -9,6 +9,7 @@ import PatataTimer from './components/PatataTimer.tsx'
 import MoneyRow from './components/MoneyRow'
 import DayProgress from './components/DayProgress'
 import ActivityLog from './components/ActivityLog'
+import YandexMetrika from './components/YandexMetrika'
 
 const LOG_KEY = 'eff-timer-log-v1'
 const SETTINGS_KEY = 'eff-timer-settings-v1'
@@ -336,6 +337,7 @@ export default function App() {
 	// ── Render ──
 	return (
 		<div className='app'>
+			<YandexMetrika yandexMetrikaId={107090187} />
 			{/* ── Верхняя строка: заголовок + настройки ── */}
 			<header className='app-topbar'>
 				<h1 className='app-title'>Pomodoro / Patata</h1>
