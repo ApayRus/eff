@@ -13,6 +13,13 @@ import ActivityLog from './components/ActivityLog'
 const LOG_KEY = 'eff-timer-log-v1'
 const SETTINGS_KEY = 'eff-timer-settings-v1'
 
+type AudioContextCtor = new () => AudioContext
+
+function getAudioContextCtor(): AudioContextCtor | null {
+	const win = window as Window & { webkitAudioContext?: AudioContextCtor }
+	return window.AudioContext ?? win.webkitAudioContext ?? null
+}
+
 export default function App() {
 	const [settings, setSettings] = useState<StoredSettings>(defaultSettings)
 	const [logs, setLogs] = useState<LogEntry[]>([])
@@ -21,10 +28,45 @@ export default function App() {
 	const [elapsedSeconds, setElapsedSeconds] = useState(0)
 	const [currentStart, setCurrentStart] = useState<Date | null>(null)
 	const [pomodoroTargetReached, setPomodoroTargetReached] = useState(false)
+	const [updateReady, setUpdateReady] = useState(false)
 
 	const pomodoroAudio = useRef<HTMLAudioElement | null>(null)
 	const patataAudio = useRef<HTMLAudioElement | null>(null)
 	const stopAudio = useRef<HTMLAudioElement | null>(null)
+	const audioContext = useRef<AudioContext | null>(null)
+	const pomodoroGain = useRef<GainNode | null>(null)
+	const patataGain = useRef<GainNode | null>(null)
+
+	function applyTickVolume(vol: number) {
+		if (pomodoroAudio.current) pomodoroAudio.current.volume = vol
+		if (patataAudio.current) patataAudio.current.volume = vol
+		if (stopAudio.current) stopAudio.current.volume = vol
+		if (pomodoroGain.current) pomodoroGain.current.gain.value = vol
+		if (patataGain.current) patataGain.current.gain.value = vol
+	}
+
+	function ensureAudioGraph() {
+		if (audioContext.current || !pomodoroAudio.current || !patataAudio.current) return
+		const Ctor = getAudioContextCtor()
+		if (!Ctor) return
+		try {
+			const ctx = new Ctor()
+			const pomodoroSource = ctx.createMediaElementSource(pomodoroAudio.current)
+			const patataSource = ctx.createMediaElementSource(patataAudio.current)
+			const pomodoroGainNode = ctx.createGain()
+			const patataGainNode = ctx.createGain()
+			pomodoroSource.connect(pomodoroGainNode)
+			pomodoroGainNode.connect(ctx.destination)
+			patataSource.connect(patataGainNode)
+			patataGainNode.connect(ctx.destination)
+			audioContext.current = ctx
+			pomodoroGain.current = pomodoroGainNode
+			patataGain.current = patataGainNode
+			applyTickVolume(settings.tickVolume ?? 0.6)
+		} catch {
+			/* fallback to element.volume */
+		}
+	}
 
 	// ── Init: load from localStorage & create audio ──
 	useEffect(() => {
@@ -51,20 +93,45 @@ export default function App() {
 		patataAudio.current = new Audio(`${base}sounds/patata.mp3`)
 		stopAudio.current = new Audio(`${base}sounds/stop.mp3`)
 
-		const vol = settings.tickVolume ?? 0.6
-		if (pomodoroAudio.current) pomodoroAudio.current.volume = vol
-		if (patataAudio.current) patataAudio.current.volume = vol
+		applyTickVolume(settings.tickVolume ?? 0.6)
+
+		return () => {
+			stopAllSounds()
+			if (stopAudio.current) {
+				stopAudio.current.pause()
+				stopAudio.current.currentTime = 0
+			}
+			if (audioContext.current) void audioContext.current.close()
+		}
 	}, [])
 
 	useEffect(() => {
 		window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
 	}, [settings])
 
+	useEffect(() => {
+		const onUpdateReady = () => setUpdateReady(true)
+		const onControllerChange = () => {
+			window.location.reload()
+		}
+		window.addEventListener('eff-sw-update-ready', onUpdateReady)
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+		}
+		return () => {
+			window.removeEventListener('eff-sw-update-ready', onUpdateReady)
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.removeEventListener(
+					'controllerchange',
+					onControllerChange
+				)
+			}
+		}
+	}, [])
+
 	// ── Apply tick volume ──
 	useEffect(() => {
-		const vol = settings.tickVolume ?? 0.6
-		if (pomodoroAudio.current) pomodoroAudio.current.volume = vol
-		if (patataAudio.current) patataAudio.current.volume = vol
+		applyTickVolume(settings.tickVolume ?? 0.6)
 	}, [settings.tickVolume])
 
 	// ── Tick ──
@@ -141,6 +208,10 @@ export default function App() {
 
 	function playModeSound(m: TimerMode) {
 		stopAllSounds()
+		ensureAudioGraph()
+		if (audioContext.current?.state === 'suspended') {
+			void audioContext.current.resume()
+		}
 		if (m === 'pomodoro' && pomodoroAudio.current) {
 			pomodoroAudio.current.loop = true
 			void pomodoroAudio.current.play()
@@ -225,6 +296,17 @@ export default function App() {
 		startPomodoro()
 	}
 
+	function handlePatataWorkButton() {
+		if (mode === 'patata' && isRunning) {
+			stopCurrentTimer(false)
+			startPomodoro()
+			return
+		}
+		if (mode === 'idle') {
+			startPatata()
+		}
+	}
+
 	function handleClearLog() {
 		if (!window.confirm('Очистить журнал и сбросить выработку?')) return
 		setLogs(() => {
@@ -235,6 +317,20 @@ export default function App() {
 		setIsRunning(false)
 		setCurrentStart(null)
 		stopAllSounds()
+	}
+
+	function handleApplyUpdate() {
+		if (!('serviceWorker' in navigator)) {
+			window.location.reload()
+			return
+		}
+		void navigator.serviceWorker.getRegistration().then(registration => {
+			if (registration?.waiting) {
+				registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+				return
+			}
+			window.location.reload()
+		})
 	}
 
 	// ── Render ──
@@ -248,6 +344,14 @@ export default function App() {
 					onChange={patch => setSettings(prev => ({ ...prev, ...patch }))}
 				/>
 			</header>
+			{updateReady && (
+				<div className='update-banner' role='status'>
+					<span>Доступна новая версия приложения</span>
+					<button className='primary-button update-btn' onClick={handleApplyUpdate}>
+						Обновить
+					</button>
+				</div>
+			)}
 
 			{/* ── Таймеры ── */}
 			<div className='timers-section'>
@@ -258,11 +362,14 @@ export default function App() {
 						isRunning={isRunning}
 						progress={pomodoroProgress}
 						onStart={handlePomodoroButton}
+						buttonLabel={mode === 'pomodoro' && isRunning ? 'Отдыхать' : 'Работать'}
 					/>
 					<PatataTimer
 						elapsedSeconds={elapsedSeconds}
 						isActive={mode === 'patata'}
 						isRunning={isRunning}
+						onWork={handlePatataWorkButton}
+						buttonLabel={mode === 'patata' && isRunning ? 'Работать' : 'Отдыхать'}
 					/>
 				</div>
 				<MoneyRow earned={totals.earned} lost={totals.lost} />

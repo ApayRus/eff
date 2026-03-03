@@ -1,12 +1,14 @@
 /* ── Корневой контейнер ── */
 .app {
 	max-width: 1280px;
+	width: 100%;
 	margin: 0 auto;
 	padding: 24px 28px 48px;
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
 	color: #f6f6f9;
+	min-width: 0;
 }
 
 /* ── Верхняя строка: заголовок + настройки ── */
@@ -24,6 +26,25 @@
 	letter-spacing: 0.06em;
 	color: rgba(248, 250, 252, 0.95);
 	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.update-banner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 10px 12px;
+	border-radius: 12px;
+	background: rgba(15, 23, 42, 0.92);
+	border: 1px solid rgba(56, 189, 248, 0.35);
+	color: rgba(226, 232, 240, 0.95);
+	font-size: 13px;
+}
+
+.update-btn {
+	padding: 6px 12px;
+	font-size: 12px;
 	flex-shrink: 0;
 }
 
@@ -82,21 +103,32 @@
 		box-shadow 0.15s;
 }
 
+.s-field input[type='number'] {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+.s-field input[type='number']::-webkit-outer-spin-button,
+.s-field input[type='number']::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
 .s-field input:focus {
 	border-color: rgba(122, 186, 255, 0.8);
 	box-shadow: 0 0 0 2px rgba(122, 186, 255, 0.2);
 }
 
 .s-field--hour input {
-	width: 52px;
+	width: 50px;
 }
 
 .s-field--day input {
-	width: 40px;
+	width: 30px;
 }
 
 .s-field--focus input {
-	width: 44px;
+	width: 36px;
 }
 
 /* Кнопка громкости + поповер */
@@ -229,7 +261,7 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
-	padding: 18px 20px 20px;
+	padding: 18px 20px 68px;
 	gap: 8px;
 }
 
@@ -287,10 +319,12 @@
 	text-align: right;
 }
 
-/* Кнопка внутри таймера — всегда яркая */
+/* Кнопка внутри карточки таймера — всегда яркая */
 .timer-btn {
-	align-self: flex-start;
-	margin-top: 4px;
+	position: absolute;
+	left: 20px;
+	bottom: 20px;
+	z-index: 2;
 	/* компенсация яркости родительского filter на неактивной карточке */
 	filter: brightness(2.2) saturate(1.6);
 }
@@ -343,6 +377,11 @@
 
 .danger-button:hover {
 	background: rgba(127, 29, 29, 0.55);
+}
+
+.danger-button-small {
+	padding: 5px 10px;
+	font-size: 12px;
 }
 
 /* ── Деньги ── */
@@ -468,9 +507,9 @@
 	justify-content: space-between;
 	align-items: center;
 	gap: 8px;
-	padding: 6px 10px;
+	padding: 5px 8px;
 	border-radius: 10px;
-	font-size: 13px;
+	font-size: 12px;
 	background: rgba(15, 23, 42, 0.8);
 }
 
@@ -481,38 +520,27 @@
 	border-left: 3px solid rgba(248, 113, 113, 0.9);
 }
 
-.log-main {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.log-type {
-	text-transform: uppercase;
-	letter-spacing: 0.07em;
-	font-weight: 700;
-	font-size: 12px;
-	color: rgba(248, 250, 252, 0.9);
-}
-
 .log-time {
 	color: rgba(203, 213, 225, 0.85);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
 }
 
-.log-meta {
+.log-bottom {
 	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 2px;
+	align-items: baseline;
+	gap: 8px;
 }
 
 .log-duration {
 	color: rgba(148, 163, 184, 0.95);
-	font-size: 12px;
+	font-size: 11px;
+	white-space: nowrap;
 }
 .log-amount {
 	font-weight: 700;
-	font-size: 13px;
+	font-size: 12px;
+	white-space: nowrap;
 }
 .log-amount-positive {
 	color: #4ade80;
@@ -527,6 +555,13 @@
 	color: rgba(148, 163, 184, 0.9);
 }
 
+@media (min-width: 701px) {
+	.timers-row[data-mode='pomodoro'] .timer-card-patata .timer-btn,
+	.timers-row[data-mode='patata'] .timer-card-pomodoro .timer-btn {
+		display: none;
+	}
+}
+
 /* ── Адаптив ── */
 @media (max-width: 700px) {
 	.app {
@@ -534,6 +569,10 @@
 	}
 	.app-title {
 		font-size: 16px;
+	}
+	.update-banner {
+		flex-direction: column;
+		align-items: flex-start;
 	}
 	.settings-bar {
 		gap: 4px;
@@ -578,5 +617,179 @@
 	}
 	.money-row {
 		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 219px) {
+	.app {
+		padding: 6px 4px 12px;
+		gap: 8px;
+		overflow-x: hidden;
+	}
+
+	.app-topbar {
+		gap: 6px;
+	}
+
+	.app-title {
+		display: none;
+	}
+
+	.settings-bar {
+		display: none;
+	}
+
+	.update-banner {
+		display: none;
+	}
+
+	.timer-card {
+		aspect-ratio: 1 / 1;
+		position: relative;
+	}
+
+	.timer-inner {
+		padding: 8px;
+		gap: 4px;
+		justify-content: flex-end;
+		position: relative;
+		background: none;
+	}
+
+	.timer-label,
+	.timer-status,
+	.timer-progress-pct {
+		display: none;
+	}
+
+	.timer-progress {
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+	}
+
+	.timer-progress-bar {
+		height: 3px;
+		background: rgba(255, 255, 255, 0.22);
+		border-radius: 0;
+	}
+
+	.timer-time {
+		font-size: clamp(22px, 20vw, 30px);
+	}
+
+	.timer-card .timer-btn {
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		border-radius: 999px;
+		font-size: 0;
+		line-height: 0;
+		position: absolute !important;
+		top: auto !important;
+		left: auto !important;
+		right: 8px !important;
+		bottom: 8px !important;
+		margin: 0 !important;
+		margin-top: 0 !important;
+		align-self: auto;
+		z-index: 2;
+	}
+
+	.timer-btn::before {
+		content: '';
+		display: block;
+		width: 12px;
+		height: 12px;
+		border-radius: 999px;
+		background: rgba(15, 14, 22, 0.8);
+		margin: 0 auto;
+	}
+
+	.money-card {
+		padding: 10px 8px;
+	}
+
+	.money-label,
+	.progress-title {
+		display: none;
+	}
+
+	.money-card strong {
+		font-size: 16px;
+		width: 100%;
+		text-align: center;
+	}
+
+	.panel-progress {
+		padding: 0;
+	}
+
+	.progress-header {
+		display: none;
+	}
+
+	.panel-log {
+		padding: 0;
+		border-radius: 0;
+		border: none;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.log-header {
+		display: none;
+	}
+
+	.log-day + .log-day {
+		margin-top: 8px;
+		padding-top: 8px;
+	}
+
+	.log-day h3 {
+		margin: 0 0 4px;
+		font-size: 12px;
+	}
+
+	.log-item {
+		padding: 2px 0 2px 4px;
+		gap: 2px;
+		border-radius: 0;
+		background: transparent;
+		border-left-width: 2px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.log-time {
+		font-size: 11px;
+	}
+
+	.log-bottom {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		gap: 6px;
+	}
+
+	.log-duration,
+	.log-amount {
+		font-size: 10px;
+	}
+
+	.app-topbar,
+	.timers-section,
+	.timers-row,
+	.panel,
+	.money-row,
+	.money-card,
+	.log-list,
+	.log-day,
+	.log-item,
+	.progress-bar {
+		min-width: 0;
 	}
 }

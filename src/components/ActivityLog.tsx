@@ -27,7 +27,7 @@ export default function ActivityLog({ logs, onClear }: Props) {
 		<div className='panel panel-log'>
 			<div className='log-header'>
 				<h2>Журнал</h2>
-				<button className='danger-button' onClick={onClear}>
+				<button className='danger-button danger-button-small' onClick={onClear}>
 					Очистить
 				</button>
 			</div>
@@ -52,23 +52,18 @@ export default function ActivityLog({ logs, onClear }: Props) {
 									const sign = entry.mode === 'pomodoro' ? '+' : '-'
 									return (
 										<li key={entry.id} className={`log-item ${entry.mode}`}>
-											<div className='log-main'>
-												<span className='log-type'>
-													{entry.mode === 'pomodoro' ? 'Pomodoro' : 'Patata'}
-												</span>
-												<span className='log-time'>
-													{start.toLocaleTimeString('ru-RU', {
-														hour: '2-digit',
-														minute: '2-digit'
-													})}
-													{' — '}
-													{end.toLocaleTimeString('ru-RU', {
-														hour: '2-digit',
-														minute: '2-digit'
-													})}
-												</span>
-											</div>
-											<div className='log-meta'>
+											<span className='log-time'>
+												{start.toLocaleTimeString('ru-RU', {
+													hour: '2-digit',
+													minute: '2-digit'
+												})}
+												{' - '}
+												{end.toLocaleTimeString('ru-RU', {
+													hour: '2-digit',
+													minute: '2-digit'
+												})}
+											</span>
+											<div className='log-bottom'>
 												<span className='log-duration'>
 													{entry.durationMinutes.toFixed(1)} мин
 												</span>

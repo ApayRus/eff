@@ -6,6 +6,7 @@ type Props = {
 	isRunning: boolean
 	progress: number
 	onStart: () => void
+	buttonLabel: string
 }
 
 export default function PomodoroTimer({
@@ -13,7 +14,8 @@ export default function PomodoroTimer({
 	isActive,
 	isRunning,
 	progress,
-	onStart
+	onStart,
+	buttonLabel
 }: Props) {
 	const status =
 		isActive && isRunning
@@ -21,8 +23,6 @@ export default function PomodoroTimer({
 			: isActive
 				? 'На паузе'
 				: 'Готов к старту'
-
-	const btnLabel = isActive && isRunning ? 'Стоп → Patata' : 'Старт Pomodoro'
 
 	return (
 		<div
@@ -43,10 +43,14 @@ export default function PomodoroTimer({
 					</div>
 					<span className='timer-progress-pct'>{progress.toFixed(0)}%</span>
 				</div>
-				<button className='primary-button timer-btn' onClick={onStart}>
-					{btnLabel}
-				</button>
 			</div>
+			<button
+				className='primary-button timer-btn'
+				onClick={onStart}
+				aria-label={buttonLabel}
+			>
+				{buttonLabel}
+			</button>
 		</div>
 	)
 }

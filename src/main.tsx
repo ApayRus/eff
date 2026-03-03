@@ -8,3 +8,28 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+		void navigator.serviceWorker.register('/sw.js').then(registration => {
+			const notifyUpdateReady = () => {
+				window.dispatchEvent(new Event('eff-sw-update-ready'))
+			}
+
+			if (registration.waiting) notifyUpdateReady()
+
+			registration.addEventListener('updatefound', () => {
+				const nextWorker = registration.installing
+				if (!nextWorker) return
+				nextWorker.addEventListener('statechange', () => {
+					if (
+						nextWorker.state === 'installed' &&
+						navigator.serviceWorker.controller
+					) {
+						notifyUpdateReady()
+					}
+				})
+			})
+		})
+	})
+}

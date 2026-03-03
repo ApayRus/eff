@@ -4,15 +4,19 @@ type Props = {
 	elapsedSeconds: number
 	isActive: boolean
 	isRunning: boolean
+	onWork: () => void
+	buttonLabel: string
 }
 
 export default function PatataTimer({
 	elapsedSeconds,
 	isActive,
-	isRunning
+	isRunning,
+	onWork,
+	buttonLabel
 }: Props) {
 	const status =
-		isActive && isRunning ? 'Отдыхаем — деньги тают' : 'Ждём Pomodoro'
+		isActive && isRunning ? 'Отдыхаем — упускаем деньги' : 'Ждём Pomodoro'
 
 	return (
 		<div
@@ -25,6 +29,13 @@ export default function PatataTimer({
 				</div>
 				<div className='timer-status'>{status}</div>
 			</div>
+			<button
+				className='primary-button timer-btn'
+				onClick={onWork}
+				aria-label={buttonLabel}
+			>
+				{buttonLabel}
+			</button>
 		</div>
 	)
 }
