@@ -5,7 +5,7 @@ import { defaultSettings, getDateKey } from './types'
 import type { LogEntry, StoredSettings, TimerMode, WorkMode } from './types'
 import SettingsBar from './components/SettingsBar'
 import PomodoroTimer from './components/PomodoroTimer'
-import PatataTimer from './components/PatataTimer'
+import PatataTimer from './components/PatataTimer.tsx'
 import MoneyRow from './components/MoneyRow'
 import DayProgress from './components/DayProgress'
 import ActivityLog from './components/ActivityLog'
@@ -36,11 +36,13 @@ export default function App() {
 		}
 		try {
 			const raw = window.localStorage.getItem(SETTINGS_KEY)
-			if (raw)
+			if (raw) {
+				const parsed = JSON.parse(raw) as Partial<StoredSettings>
 				setSettings(prev => ({
 					...prev,
-					...(JSON.parse(raw) as StoredSettings)
+					...parsed
 				}))
+				}
 		} catch {
 			/* ignore */
 		}
@@ -48,11 +50,22 @@ export default function App() {
 		pomodoroAudio.current = new Audio(`${base}sounds/pomodoro.mp3`)
 		patataAudio.current = new Audio(`${base}sounds/patata.mp3`)
 		stopAudio.current = new Audio(`${base}sounds/stop.mp3`)
+
+		const vol = settings.tickVolume ?? 0.6
+		if (pomodoroAudio.current) pomodoroAudio.current.volume = vol
+		if (patataAudio.current) patataAudio.current.volume = vol
 	}, [])
 
 	useEffect(() => {
 		window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
 	}, [settings])
+
+	// ── Apply tick volume ──
+	useEffect(() => {
+		const vol = settings.tickVolume ?? 0.6
+		if (pomodoroAudio.current) pomodoroAudio.current.volume = vol
+		if (patataAudio.current) patataAudio.current.volume = vol
+	}, [settings.tickVolume])
 
 	// ── Tick ──
 	useEffect(() => {
@@ -238,7 +251,7 @@ export default function App() {
 
 			{/* ── Таймеры ── */}
 			<div className='timers-section'>
-				<div className='timers-row'>
+				<div className='timers-row' data-mode={mode}>
 					<PomodoroTimer
 						elapsedSeconds={elapsedSeconds}
 						isActive={mode === 'pomodoro'}

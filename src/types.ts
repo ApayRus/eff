@@ -14,12 +14,14 @@ export type StoredSettings = {
 	hourlyRate: number
 	workdayMinutes: number
 	pomodoroMinutes: number
+	tickVolume: number
 }
 
 export const defaultSettings: StoredSettings = {
 	hourlyRate: 1000,
 	workdayMinutes: 480,
-	pomodoroMinutes: 40
+	pomodoroMinutes: 40,
+	tickVolume: 0.6
 }
 
 export function formatTime(totalSeconds: number): string {
@@ -30,5 +32,8 @@ export function formatTime(totalSeconds: number): string {
 
 export function getDateKey(date: Date | string): string {
 	const d = typeof date === 'string' ? new Date(date) : date
-	return d.toISOString().slice(0, 10)
+	const y = d.getFullYear()
+	const m = String(d.getMonth() + 1).padStart(2, '0')
+	const day = String(d.getDate()).padStart(2, '0')
+	return `${y}-${m}-${day}`
 }

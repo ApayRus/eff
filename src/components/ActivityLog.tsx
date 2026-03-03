@@ -19,7 +19,7 @@ export default function ActivityLog({ logs, onClear }: Props) {
 			.sort(([a], [b]) => (a < b ? 1 : -1))
 			.map(([date, entries]) => ({
 				date,
-				entries: entries.sort((a, b) => (a.start < b.start ? -1 : 1))
+					entries: entries.sort((a, b) => (a.start < b.start ? 1 : -1))
 			}))
 	}, [logs])
 
@@ -39,7 +39,7 @@ export default function ActivityLog({ logs, onClear }: Props) {
 					{groupedByDate.map(({ date, entries }) => (
 						<div key={date} className='log-day'>
 							<h3>
-								{new Date(date).toLocaleDateString('ru-RU', {
+								{new Date(`${date}T00:00:00`).toLocaleDateString('ru-RU', {
 									year: 'numeric',
 									month: 'long',
 									day: 'numeric'
