@@ -1,6 +1,6 @@
 import './App.css'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { defaultSettings, getDateKey } from './types'
 import type { LogEntry, StoredSettings, TimerMode, WorkMode } from './types'
 import SettingsBar from './components/SettingsBar'
@@ -37,6 +37,14 @@ export default function App() {
 	const audioContext = useRef<AudioContext | null>(null)
 	const pomodoroGain = useRef<GainNode | null>(null)
 	const patataGain = useRef<GainNode | null>(null)
+
+	const stopAllSounds = useCallback(() => {
+		;[pomodoroAudio.current, patataAudio.current].forEach(a => {
+			if (!a) return
+			a.pause()
+			a.currentTime = 0
+		})
+	}, [])
 
 	function applyTickVolume(vol: number) {
 		if (pomodoroAudio.current) pomodoroAudio.current.volume = vol
@@ -94,10 +102,12 @@ export default function App() {
 		patataAudio.current = new Audio(`${base}sounds/patata.mp3`)
 		stopAudio.current = new Audio(`${base}sounds/stop.mp3`)
 
-		applyTickVolume(settings.tickVolume ?? 0.6)
-
 		return () => {
-			stopAllSounds()
+			;[pomodoroAudio.current, patataAudio.current].forEach(a => {
+				if (!a) return
+				a.pause()
+				a.currentTime = 0
+			})
 			if (stopAudio.current) {
 				stopAudio.current.pause()
 				stopAudio.current.currentTime = 0
@@ -137,22 +147,16 @@ export default function App() {
 
 	// ── Tick ──
 	useEffect(() => {
-		if (!isRunning || mode === 'idle') return
+		if (!isRunning || mode === 'idle' || !currentStart) return
 		const interval = window.setInterval(() => {
-			setElapsedSeconds(prev => {
-				const next = prev + 1
-				if (mode === 'pomodoro') {
-					const target = settings.pomodoroMinutes * 60
-					if (!pomodoroTargetReached && target > 0 && next >= target) {
-						handlePomodoroTargetReached()
-					}
-				}
-				return next
-			})
+			const next = Math.max(
+				0,
+				Math.floor((Date.now() - currentStart.getTime()) / 1000)
+			)
+			setElapsedSeconds(next)
 		}, 1000)
 		return () => window.clearInterval(interval)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isRunning, mode, settings.pomodoroMinutes, pomodoroTargetReached])
+	}, [isRunning, mode, currentStart])
 
 	// ── Derived values ──
 	const perMinuteRate = useMemo(
@@ -161,7 +165,7 @@ export default function App() {
 	)
 	const todayKey = getDateKey(new Date())
 
-	const totals = useMemo(() => {
+	const baseTotals = useMemo(() => {
 		let earned = 0,
 			lost = 0,
 			workedMinutesToday = 0
@@ -171,6 +175,11 @@ export default function App() {
 			if (getDateKey(e.start) === todayKey && e.mode === 'pomodoro')
 				workedMinutesToday += e.durationMinutes
 		}
+		return { earned, lost, workedMinutesToday }
+	}, [logs, todayKey])
+
+	const totals = useMemo(() => {
+		let { earned, lost, workedMinutesToday } = baseTotals
 		if (isRunning && mode !== 'idle') {
 			const mins = elapsedSeconds / 60
 			const amt = mins * perMinuteRate
@@ -182,7 +191,7 @@ export default function App() {
 			}
 		}
 		return { earned, lost, workedMinutesToday }
-	}, [logs, todayKey, isRunning, elapsedSeconds, perMinuteRate, mode])
+	}, [baseTotals, isRunning, mode, elapsedSeconds, perMinuteRate])
 
 	const dayProgress = Math.min(
 		100,
@@ -199,14 +208,6 @@ export default function App() {
 	)
 
 	// ── Audio helpers ──
-	function stopAllSounds() {
-		;[pomodoroAudio.current, patataAudio.current].forEach(a => {
-			if (!a) return
-			a.pause()
-			a.currentTime = 0
-		})
-	}
-
 	function playModeSound(m: TimerMode) {
 		stopAllSounds()
 		ensureAudioGraph()
@@ -261,6 +262,27 @@ export default function App() {
 		playModeSound('patata')
 	}
 
+	useEffect(() => {
+		if (!isRunning || mode !== 'pomodoro' || pomodoroTargetReached) return
+		const target = settings.pomodoroMinutes * 60
+		if (target > 0 && elapsedSeconds >= target) {
+			if (!currentStart) return
+			const end = new Date()
+			if (stopAudio.current) void stopAudio.current.play()
+			persistLog('pomodoro', currentStart, end)
+			setCurrentStart(null)
+			setPomodoroTargetReached(true)
+			startPatata()
+		}
+	}, [
+		isRunning,
+		mode,
+		pomodoroTargetReached,
+		settings.pomodoroMinutes,
+		elapsedSeconds,
+		currentStart
+	])
+
 	function stopCurrentTimer(thenPatata: boolean) {
 		if (!currentStart || mode === 'idle') {
 			setIsRunning(false)
@@ -276,16 +298,6 @@ export default function App() {
 		stopAllSounds()
 		if (thenPatata) startPatata()
 		else setMode('idle')
-	}
-
-	function handlePomodoroTargetReached() {
-		if (!currentStart || mode === 'idle' || pomodoroTargetReached) return
-		const end = new Date()
-		if (stopAudio.current) void stopAudio.current.play()
-		persistLog('pomodoro', currentStart, end)
-		setCurrentStart(null)
-		setPomodoroTargetReached(true)
-		startPatata()
 	}
 
 	function handlePomodoroButton() {
@@ -308,7 +320,7 @@ export default function App() {
 		}
 	}
 
-	function handleClearLog() {
+	const handleClearLog = useCallback(() => {
 		if (!window.confirm('Очистить журнал и сбросить выработку?')) return
 		setLogs(() => {
 			window.localStorage.setItem(LOG_KEY, JSON.stringify([]))
@@ -318,7 +330,7 @@ export default function App() {
 		setIsRunning(false)
 		setCurrentStart(null)
 		stopAllSounds()
-	}
+	}, [stopAllSounds])
 
 	function handleApplyUpdate() {
 		if (!('serviceWorker' in navigator)) {

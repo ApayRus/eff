@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import type { LogEntry } from '../types'
 import { getDateKey } from '../types'
 
@@ -7,7 +7,7 @@ type Props = {
 	onClear: () => void
 }
 
-export default function ActivityLog({ logs, onClear }: Props) {
+function ActivityLog({ logs, onClear }: Props) {
 	const groupedByDate = useMemo(() => {
 		const groups: Record<string, LogEntry[]> = {}
 		for (const entry of logs) {
@@ -89,3 +89,5 @@ export default function ActivityLog({ logs, onClear }: Props) {
 		</div>
 	)
 }
+
+export default memo(ActivityLog, (prev, next) => prev.logs === next.logs)
